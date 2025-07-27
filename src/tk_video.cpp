@@ -1131,11 +1131,13 @@ void VideoRefreshScreen ()
 				}
 				if ((start >= 0) && !celldirty[x][y])
 				{
+					// AJS -- how do we scale these, or not do it this way?
+					// 
 					//StretchBlt(framedc, 0, 0, clientRect.right, clientRect.bottom - STATUSHEIGHT,
 					//	devicedc, 0, 0, 560, 384, SRCCOPY);
 
-					BitBlt(framedc, xpixel, start, 14, ypixel - start,
-						devicedc, xpixel, start, SRCCOPY);
+					//BitBlt(framedc, xpixel, start, 14, ypixel - start,
+					//	devicedc, xpixel, start, SRCCOPY);
 
 					start = -1;
 				}

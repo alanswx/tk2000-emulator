@@ -1231,7 +1231,7 @@ void FrameCreateWindow() {
 	height = VIDEOHEIGHT +  (GetSystemMetrics(SM_CYBORDER)<<1) +
 							GetSystemMetrics(SM_CYCAPTION) +
 							GetSystemMetrics(SM_CYMENU) + 
-							STATUSHEIGHT + 4 + 16;
+							STATUSHEIGHT + 4 +  8;
 
 	if (!RegLoadValue(PREFERENCIAS,POSX,1,(DWORD *)&xpos))
 		xpos = (GetSystemMetrics(SM_CXSCREEN)-width) >> 1;
