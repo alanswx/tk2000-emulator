@@ -202,7 +202,10 @@ BEGIN
         MENUITEM "&Configurar (F3)",            mnuConfig
         MENUITEM "&Escolher Cor do Texto",      mnuCor
         MENUITEM SEPARATOR
-        MENUITEM "Sai&r",                       mnuSair
+        MENUITEM "Tela Cheia (F11)", mnuFullScreen
+        MENUITEM SEPARATOR
+
+    MENUITEM "Sai&r",                       mnuSair
     END
     POPUP "&Discos"
     BEGIN

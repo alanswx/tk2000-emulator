@@ -47,6 +47,7 @@
 #define mnuTapeStop                     40029
 #define mnuTapeRew                      40030
 #define mnuExtrairBasic					40031
+#define mnuFullScreen					40032
 
 // Next default values for new objects
 // 

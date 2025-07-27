@@ -7,19 +7,20 @@
 ***/
 
 /*  Emulador do computador TK2000 (Microdigital)
- *  por Fábio Belavenuto - Copyright (C) 2004
+ *  por FÃ¡bio Belavenuto - Copyright (C) 2004
  *
  *  Adaptado do emulador Applewin por Michael O'Brien
  *  Part of code is Copyright (C) 2003-2004 Tom Charlesworth
  *
- *  Este arquivo é distribuido pela Licença Pública Geral GNU.
+ *  Este arquivo Ã© distribuido pela LicenÃ§a PÃºblica Geral GNU.
  *  Veja o arquivo Licenca.txt distribuido com este software.
  *
- *  ESTE SOFTWARE NÃO OFERECE NENHUMA GARANTIA
+ *  ESTE SOFTWARE NÃƒO OFERECE NENHUMA GARANTIA
  *
  */
 
-// Emula o vídeo
+ // Emula o vÃ­deo
+
 
 #include "tk_stdhdr.h"
 #include "tk_main.h"
@@ -115,7 +116,7 @@
 
 #define  HGR_MATRIX_YOFFSET 2	// For tv emulation mode
 
-// Posições na memória:
+// PosiÃ§Ãµes na memÃ³ria:
 #define  PAG1OFFSET   0x2000
 #define  PAG2OFFSET   0xA000
 #define  VIDEOLENGTH  0x2000
@@ -892,8 +893,8 @@ void VideoDisplayLogo ()
 #define  DRAWVERSION(x,y,c)		SetTextColor(framedc,c);                \
 								TextOut(framedc,                        \
 										540+x,358+y,                    \
-										"Versão " VERSIONSTRING,		\
-										strlen("Versão " VERSIONSTRING));
+										"VersÃ£o " VERSIONSTRING,		\
+										strlen("VersÃ£o " VERSIONSTRING));
 
 	if (GetDeviceCaps(framedc,PLANES) * GetDeviceCaps(framedc,BITSPIXEL) <= 4)
 	{
@@ -1005,6 +1006,9 @@ void VideoRedrawScreen ()
 //===========================================================================
 void VideoRefreshScreen ()
 {
+	RECT       clientRect;
+	GetClientRect(framewindow, &clientRect);
+
 	BYTE*      addr           = framebufferbits;
 	LONG       pitch          = 560;
 	HDC        framedc        = (HDC)FrameGetVideoDC((char **)&addr,&pitch);
@@ -1079,8 +1083,8 @@ void VideoRefreshScreen ()
 							&& celldirty[x-1][y+height]
 							&& celldirty[(startx+x-1) >> 1][y+height])
 					height++;
-					BitBlt(framedc,start,ypixel,xpixel-start,height << 4,
-								devicedc,start,ypixel,SRCCOPY);
+					StretchBlt(framedc, 0, 0, clientRect.right, clientRect.bottom - STATUSHEIGHT,
+								devicedc, 0, 0, 560, 384, SRCCOPY);
 					while (height--)
 					{
 						int loop = startx;
@@ -1127,8 +1131,12 @@ void VideoRefreshScreen ()
 				}
 				if ((start >= 0) && !celldirty[x][y])
 				{
-					BitBlt(framedc,xpixel,start,14,ypixel-start,
-					devicedc,xpixel,start,SRCCOPY);
+					//StretchBlt(framedc, 0, 0, clientRect.right, clientRect.bottom - STATUSHEIGHT,
+					//	devicedc, 0, 0, 560, 384, SRCCOPY);
+
+					BitBlt(framedc, xpixel, start, 14, ypixel - start,
+						devicedc, xpixel, start, SRCCOPY);
+
 					start = -1;
 				}
 				else if ((start == -1) && celldirty[x][y])

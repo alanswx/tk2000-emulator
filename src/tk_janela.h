@@ -1,14 +1,14 @@
 
 /*  Emulador do computador TK2000 (Microdigital)
- *  por Fábio Belavenuto - Copyright (C) 2004
+ *  por FÃ¡bio Belavenuto - Copyright (C) 2004
  *
  *  Adaptado do emulador Applewin por Michael O'Brien
  *  Part of code is Copyright (C) 2003-2004 Tom Charlesworth
  *
- *  Este arquivo é distribuido pela Licença Pública Geral GNU.
+ *  Este arquivo Ã© distribuido pela LicenÃ§a PÃºblica Geral GNU.
  *  Veja o arquivo Licenca.txt distribuido com este software.
  *
- *  ESTE SOFTWARE NÃO OFERECE NENHUMA GARANTIA
+ *  ESTE SOFTWARE NÃƒO OFERECE NENHUMA GARANTIA
  *
  */
 
@@ -17,16 +17,16 @@
 
 //#include <windows.h>
 
-// Definições Gerais
+// DefiniÃ§Ãµes Gerais
 #define	 DRAW_BACKGROUND	1
 #define	 DRAW_LEDS			2
 #define	 DRAW_TITLE			4
 
-// Variáveis Externas
-//extern int	  fullscreen;
+// VariÃ¡veis Externas
+extern bool	  isFullScreen;
 extern HWND	  framewindow;
 
-// Protótipos
+// ProtÃ³tipos
 void FrameCreateWindow();
 int  FrameGetDC();
 int	 FrameGetVideoDC(char* *,long *);
@@ -36,7 +36,9 @@ void FrameReleaseDC();
 void FrameReleaseVideoDC();
 void FrameMenuDiskete(int);
 void FrameMostraMensagemAdvertencia(char *);
-void FrameMostraMensagemErro(char *);
+void FrameMostraMensagemErro(char *Mensagem);
+void ToggleFullScreen(void);
+#define STATUSHEIGHT 26
 int  FramePerguntaInteiro(char *, int);
 void ProcessaMenu(int ID, HWND window);
 

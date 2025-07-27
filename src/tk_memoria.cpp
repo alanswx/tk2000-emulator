@@ -956,7 +956,7 @@ void MemInitialize ()
 	file = fopen(filename, "rb");
 	if (file == NULL)
 	{
-		FrameMostraMensagemErro("A imagem de ROM não foi achada: "NOMEARQROM".");
+		FrameMostraMensagemErro("A imagem de ROM não foi achada: " "NOMEARQROM" ".");
 		exit(1);
 	}
 	fread(memrom, 0x4000, 1, file);

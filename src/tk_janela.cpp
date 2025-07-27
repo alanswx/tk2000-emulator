@@ -7,19 +7,19 @@
 ***/
 
 /*  Emulador do computador TK2000 (Microdigital)
- *  por F·bio Belavenuto - Copyright (C) 2004
+ *  por F√°bio Belavenuto - Copyright (C) 2004
  *
  *  Adaptado do emulador Applewin por Michael O'Brien
  *  Part of code is Copyright (C) 2003-2004 Tom Charlesworth
  *
- *  Este arquivo È distribuido pela LicenÁa P˙blica Geral GNU.
+ *  Este arquivo √© distribuido pela Licen√ßa P√∫blica Geral GNU.
  *  Veja o arquivo Licenca.txt distribuido com este software.
  *
- *  ESTE SOFTWARE N√O OFERECE NENHUMA GARANTIA
+ *  ESTE SOFTWARE N√ÉO OFERECE NENHUMA GARANTIA
  *
  */
 
-// Manipula a janela principal e di·logos
+ // Manipula a janela principal e di√°logos
 
 #include "tk_stdhdr.h"
 #include "tk_janela.h"
@@ -40,7 +40,7 @@
 #include "../recursos/resource.h"
 #include "utilitarios.h"
 
-// DefiniÁıes
+// Defini√ß√µes
 #define	WIDTH_DIALOGO	240
 #define	HEIGHT_DIALOGO	120
 #define POSX_ROTULO		10
@@ -52,7 +52,7 @@
 #define POSX_BTNCANC    130
 #define POSY_BTNCANC    55
 
-// DefiniÁıes
+// Defini√ß√µes
 #define STATUSHEIGHT	26
 #define STATUSYPOS1		3
 #define STATUSYPOS2		STATUSYPOS1 + 11
@@ -70,6 +70,7 @@ BOOL	ativo			= 0;
 BOOL	pintando		= 0;
 BOOL	usingcursor		= 0;
 HWND 	framewindow		= 0;
+bool	isFullScreen	= false;
 HDC		framedc			= (HDC)0;
 RECT	framerect		= {0,0,0,0};
 HFONT	smallfont		= (HFONT)0;
@@ -79,7 +80,7 @@ HPEN	btnhighlightpen = (HPEN)0;
 HPEN	btnshadowpen    = (HPEN)0;
 HBITMAP	leds[3];
 
-// Vari·veis
+// Vari√°veis
 HWND Janela;
 HWND Rotulo;
 HWND edtValor;
@@ -90,7 +91,7 @@ int  BotaoApertado = 0;
 
 char   opsJoystick[]    = "Desabilitado\0"
                           "Joystick do PC\0"
-                          "Teclado (padr„o)\0"
+                          "Teclado (padr√£o)\0"
                           "Teclado (centralizado)\0"
                           "Mouse\0";
 
@@ -104,16 +105,16 @@ char   opsSom[]         = "Desabilitado\0"
                           "PC Speaker (translatado)\0"
                           "Placa de Som\0";
 
-char   opsVideo[]       = "Monocrom·tico\0"
-                          "Colorido (padr„o)\0"
+char   opsVideo[]       = "Monocrom√°tico\0"
+                          "Colorido (padr√£o)\0"
                           "Colorido (otimizado)\0"
-                          "EmulaÁ„o de TV\0";
+                          "Emula√ß√£o de TV\0";
 
 char   opsExpansao[]    = "Nada\0"
                           "Interface Disco\0";
 
 char   opsDisco[]       = "Velocidade Real\0"
-                          "Velocidade R·pida\0";
+                          "Velocidade R√°pida\0";
 
 // Prototipos
 LRESULT CALLBACK WndProcInteiro(
@@ -152,7 +153,7 @@ void EnableTrackbar (HWND window, BOOL enable);
 void FillComboBox(HWND window, int controlid, LPCTSTR choices, int currentchoice);
 void DrawCrosshairs (int x, int y);
 
-// FunÁıes
+// Fun√ß√µes
 LRESULT CALLBACK WndProcInteiro(
 	HWND   Handle,		// handle of window
 	UINT   Mensagem,	// message identifier
@@ -196,7 +197,7 @@ LRESULT CALLBACK WndProcInteiro(
 	return DefWindowProc(Handle,Mensagem,wParam,lParam);
 }
 
-// FunÁıes Callback
+// Fun√ß√µes Callback
 LRESULT CALLBACK FrameWndProc (HWND   window,
                                UINT   message,
                                WPARAM wparam,
@@ -268,7 +269,7 @@ LRESULT CALLBACK FrameWndProc (HWND   window,
 		break;
 
 		case WM_KEYDOWN:
-			if (((wparam >= VK_F1) && (wparam <= VK_F8))  &&
+			if (((wparam >= VK_F1) && (wparam <= VK_F11))  &&
 				(GetKeyState(VK_SHIFT) >= 0) &&
 				(GetKeyState(VK_CONTROL) >= 0) &&
 				(GetKeyState(VK_MENU) >= 0))
@@ -305,6 +306,9 @@ LRESULT CALLBACK FrameWndProc (HWND   window,
 
 					case VK_F8:
 						//
+					break;
+					case VK_F11:
+						ToggleFullScreen();
 					break;
 				}
 			}
@@ -457,11 +461,11 @@ LRESULT CALLBACK FrameWndProc (HWND   window,
 			{
 				Som_Mute();
 				if (MessageBox((HWND)framewindow,
-							"Ao reiniciar o emulador o estado da m·quina ser· "
+							"Ao reiniciar o emulador o estado da m√°quina ser√° "
 							"resetado, causando perda de qualquer trabalho "
-							"n„o salvo.\n\n"
-							"VocÍ quer continuar?",
-							"ConfiguraÁ„o",
+							"n√£o salvo.\n\n"
+							"Voc√™ quer continuar?",
+							"Configura√ß√£o",
 							MB_ICONQUESTION | MB_YESNO | MB_SETFOREGROUND) == IDNO)
 				{
 					break;
@@ -515,7 +519,7 @@ BOOL CALLBACK ConfigDlgProc (HWND   window,
 					BOOL  newdisktype     = (BOOL) SendDlgItemMessage(window, cbDisco,       CB_GETCURSEL,0,0);
 
 					NewSlotAux = (BYTE)SendDlgItemMessage(window, cbExpansao,    CB_GETCURSEL,0,0);
-					// Se houve mudanÁa no slot auxiliar
+					// Se houve mudan√ßa no slot auxiliar
 					if (NewSlotAux != SlotAux)
 					{
 						if (!MemAtualizaSlotAux())
@@ -531,11 +535,11 @@ BOOL CALLBACK ConfigDlgProc (HWND   window,
 					if (newdisktype != enhancedisk)
 					{
 						if (MessageBox(window,
-									"VocÍ mudou a velocidade de acesso ao disco. "
-									"Essa mudanÁa ter· efeito somente da prÛxima "
+									"Voc√™ mudou a velocidade de acesso ao disco. "
+									"Essa mudan√ßa ter√° efeito somente da pr√≥xima "
 									"vez que o emulador for reiniciado.\n\n"
-									"VocÍ gostaria de reiniciar agora?",
-									"ConfiguraÁ„o",
+									"Voc√™ gostaria de reiniciar agora?",
+									"Configura√ß√£o",
 									MB_ICONQUESTION | MB_YESNO | MB_SETFOREGROUND) == IDYES)
 						{
 							afterclose = 2;
@@ -802,12 +806,15 @@ BOOL CALLBACK ExportarDlgProc(  HWND   window,
 	return 0;
 }
 
-// FunÁıes Internas
+// Fun√ß√µes Internas
 //===========================================================================
 void ProcessaMenu(int ID, HWND window) {
 	switch(ID) {
 		case mnuSair:
 			SendMessage(window, WM_CLOSE, 0, 0);
+			break;
+		case mnuFullScreen:
+			ToggleFullScreen();
 			break;
 
 		case mnuDepurar:
@@ -836,8 +843,8 @@ void ProcessaMenu(int ID, HWND window) {
 			MessageBox(window,
 						"Emulador TK2000 para windows, baseado "
 						"no emulador Applewin por Michael O'Brien.\n\n"
-						"Parte do cÛdigo foi usado do emulador Applewin do Tom Charlesworth.\n\n"
-						"Adaptado por F·bio Belavenuto, Copyright 2004.",
+						"Parte do c√≥digo foi usado do emulador Applewin do Tom Charlesworth.\n\n"
+						"Adaptado por F√°bio Belavenuto, Copyright 2004.",
 						"Sobre o TK2000",
 						MB_OK | MB_ICONINFORMATION
 						);
@@ -926,13 +933,13 @@ void ProcessaMenu(int ID, HWND window) {
 					FrameMostraMensagemErro("Erro ao extrair!");
 				} else {
 					if (!OpenClipboard((HWND)framewindow)) {
-						FrameMostraMensagemErro("Erro ao abrir a ¡rea de TransferÍncia");
+						FrameMostraMensagemErro("Erro ao abrir a √Årea de Transfer√™ncia");
 						free(applesoft);
 					} else {
 						EmptyClipboard();
 						HGLOBAL hText = GlobalAlloc(GMEM_DDESHARE, strlen(applesoft)+1);
 						if (hText == NULL) {
-							FrameMostraMensagemErro("Erro ao abrir a ¡rea de TransferÍncia");
+							FrameMostraMensagemErro("Erro ao abrir a √Årea de Transfer√™ncia");
 							CloseClipboard();
 							free(applesoft);
 						} else {
@@ -942,12 +949,12 @@ void ProcessaMenu(int ID, HWND window) {
 							SetClipboardData(CF_TEXT, hText);
 							CloseClipboard();
 							free(applesoft);
-							FrameMostraMensagemAdvertencia("Copiado para ·rea de transferÍncia!");
+							FrameMostraMensagemAdvertencia("Copiado para √°rea de transfer√™ncia!");
 						}
 					}
 				}
 			} else {
-				FrameMostraMensagemErro("Somente no modo de execuÁ„o");
+				FrameMostraMensagemErro("Somente no modo de execu√ß√£o");
 			}
 
 			break;
@@ -1051,9 +1058,13 @@ void DrawStatusArea(HDC passdc, int drawflags) {
 //	int  IDELed;
 
 	FrameReleaseDC();
+
 	dc     = (passdc ? passdc : GetDC(framewindow));
+	RECT       clientRect;
+	GetClientRect(framewindow, &clientRect);
+
 	x      = 0;
-	y      = VIDEOHEIGHT;
+	y      = isFullScreen ? (clientRect.bottom -  STATUSHEIGHT) : VIDEOHEIGHT;
 	DiskGetLightStatus(&drive1,&drive2);
 	TapePegaStatusLed(&TapeLed);
 
@@ -1115,8 +1126,8 @@ void DrawStatusArea(HDC passdc, int drawflags) {
 
 			case MODE_STEPPING:
 				Som_Mute();
-				strcat(title," [Passo ‡ Passo]");
-			break;
+				strcat(title, " [Passo √† Passo]");
+				break;
 		}
 		SendMessage((HWND)framewindow,WM_SETTEXT,0,(LPARAM)title);
 	}
@@ -1220,7 +1231,7 @@ void FrameCreateWindow() {
 	height = VIDEOHEIGHT +  (GetSystemMetrics(SM_CYBORDER)<<1) +
 							GetSystemMetrics(SM_CYCAPTION) +
 							GetSystemMetrics(SM_CYMENU) + 
-							STATUSHEIGHT + 4;
+							STATUSHEIGHT + 4 + 16;
 
 	if (!RegLoadValue(PREFERENCIAS,POSX,1,(DWORD *)&xpos))
 		xpos = (GetSystemMetrics(SM_CXSCREEN)-width) >> 1;
@@ -1345,10 +1356,28 @@ void FrameMostraMensagemErro(char *Mensagem) {
 	Som_Demute();
 }
 
+void ToggleFullScreen(void) {
+	//static bool isFullScreen = false;
+	static RECT normalRect;
+
+	if (isFullScreen) {
+		// Restore to normal
+		SetWindowLong(framewindow, GWL_STYLE, WS_OVERLAPPED | WS_CAPTION | WS_SYSMENU | WS_MINIMIZEBOX | WS_VISIBLE);
+		SetWindowPos(framewindow, NULL, normalRect.left, normalRect.top, normalRect.right - normalRect.left, normalRect.bottom - normalRect.top, SWP_FRAMECHANGED);
+	} else {
+		// Go to full screen
+		GetWindowRect(framewindow, &normalRect);
+		SetWindowLong(framewindow, GWL_STYLE, WS_POPUP | WS_VISIBLE);
+		SetWindowPos(framewindow, HWND_TOP, 0, 0, GetSystemMetrics(SM_CXSCREEN), GetSystemMetrics(SM_CYSCREEN), SWP_FRAMECHANGED);
+	}
+	isFullScreen = !isFullScreen;
+	Drawframewindow();
+}
+
 /*
- *  FunÁıes Auxiliares
- *  Vers„o 0.1
- *  by F·bio Belavenuto
+ *  Fun√ß√µes Auxiliares
+ *  Vers√£o 0.1
+ *  by F√°bio Belavenuto
  */
 //================================================================================
 int FramePerguntaInteiro(char *Titulo, int Default) {
