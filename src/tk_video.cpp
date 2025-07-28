@@ -1083,7 +1083,7 @@ void VideoRefreshScreen ()
 							&& celldirty[x-1][y+height]
 							&& celldirty[(startx+x-1) >> 1][y+height])
 					height++;
-					StretchBlt(framedc, 0, 0, clientRect.right, clientRect.bottom - STATUSHEIGHT,
+					StretchBlt(framedc, 0, 0, clientRect.right, clientRect.bottom - (isFullScreen ? 0 : STATUSHEIGHT),
 								devicedc, 0, 0, 560, 384, SRCCOPY);
 					while (height--)
 					{

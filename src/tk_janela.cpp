@@ -81,6 +81,7 @@ HPEN	btnshadowpen    = (HPEN)0;
 HBITMAP	leds[3];
 
 // Variáveis
+HMENU mainMenu;
 HWND Janela;
 HWND Rotulo;
 HWND edtValor;
@@ -1056,6 +1057,7 @@ void DrawStatusArea(HDC passdc, int drawflags) {
 //	int  HD1;
 //	int  HD2;
 //	int  IDELed;
+	if (isFullScreen) return;
 
 	FrameReleaseDC();
 
@@ -1237,7 +1239,7 @@ void FrameCreateWindow() {
 		xpos = (GetSystemMetrics(SM_CXSCREEN)-width) >> 1;
 	if (!RegLoadValue(PREFERENCIAS,POSY,1,(DWORD *)&ypos))
 		ypos = (GetSystemMetrics(SM_CYSCREEN)-height) >> 1;
-
+	mainMenu = (HMENU)LoadMenu(instance, "MENU");
 	framewindow = CreateWindow("TK2000FRAME",
 								TITULO,
 								WS_OVERLAPPED | WS_CAPTION | WS_SYSMENU |
@@ -1247,7 +1249,7 @@ void FrameCreateWindow() {
 								width,
 								height,
 								HWND_DESKTOP,
-								(HMENU)LoadMenu(instance, "MENU"),
+								(HMENU)mainMenu,
 								instance,
 								NULL);
 }
@@ -1364,11 +1366,13 @@ void ToggleFullScreen(void) {
 		// Restore to normal
 		SetWindowLong(framewindow, GWL_STYLE, WS_OVERLAPPED | WS_CAPTION | WS_SYSMENU | WS_MINIMIZEBOX | WS_VISIBLE);
 		SetWindowPos(framewindow, NULL, normalRect.left, normalRect.top, normalRect.right - normalRect.left, normalRect.bottom - normalRect.top, SWP_FRAMECHANGED);
+		SetMenu(framewindow, mainMenu);
 	} else {
 		// Go to full screen
 		GetWindowRect(framewindow, &normalRect);
 		SetWindowLong(framewindow, GWL_STYLE, WS_POPUP | WS_VISIBLE);
 		SetWindowPos(framewindow, HWND_TOP, 0, 0, GetSystemMetrics(SM_CXSCREEN), GetSystemMetrics(SM_CYSCREEN), SWP_FRAMECHANGED);
+		SetMenu(framewindow, NULL);
 	}
 	isFullScreen = !isFullScreen;
 	Drawframewindow();
