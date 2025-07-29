@@ -1009,9 +1009,44 @@ void VideoRefreshScreen ()
 	RECT       clientRect;
 	GetClientRect(framewindow, &clientRect);
 
+	// Calculate 4:3 aspect ratio display area
+	int availableWidth = clientRect.right;
+	int availableHeight = clientRect.bottom - (isFullScreen ? 0 : STATUSHEIGHT);
+	int displayWidth, displayHeight, displayX, displayY;
+	double scaleX, scaleY;
+	
+	// Calculate maximum 4:3 size that fits in available area
+	if (availableWidth * 3 > availableHeight * 4) {
+		// Limited by height
+		displayHeight = availableHeight;
+		displayWidth = (displayHeight * 4) / 3;
+		displayX = (availableWidth - displayWidth) / 2;
+		displayY = 0;
+	} else {
+		// Limited by width
+		displayWidth = availableWidth;
+		displayHeight = (displayWidth * 3) / 4;
+		displayX = 0;
+		displayY = (availableHeight - displayHeight) / 2;
+	}
+	
+	// Calculate exact scaling factors to avoid rounding inconsistencies
+	scaleX = (double)displayWidth / 560.0;
+	scaleY = (double)displayHeight / 384.0;
+
 	BYTE*      addr           = framebufferbits;
 	LONG       pitch          = 560;
 	HDC        framedc        = (HDC)FrameGetVideoDC((char **)&addr,&pitch);
+	
+	// Fill background with black for letterboxing/pillarboxing
+	if (framedc) {
+		HBRUSH blackBrush = CreateSolidBrush(RGB(0, 0, 0));
+		HBRUSH oldBrush = (HBRUSH)SelectObject(framedc, blackBrush);
+		PatBlt(framedc, 0, 0, clientRect.right, clientRect.bottom - (isFullScreen ? 0 : STATUSHEIGHT), PATCOPY);
+		SelectObject(framedc, oldBrush);
+		DeleteObject(blackBrush);
+	}
+	
 	updatetype update;
 	BOOL       anydirty       = 0;
 	BOOL       remainingdirty = 0;
@@ -1083,7 +1118,7 @@ void VideoRefreshScreen ()
 							&& celldirty[x-1][y+height]
 							&& celldirty[(startx+x-1) >> 1][y+height])
 					height++;
-					StretchBlt(framedc, 0, 0, clientRect.right, clientRect.bottom - (isFullScreen ? 0 : STATUSHEIGHT),
+					StretchBlt(framedc, displayX, displayY, displayWidth, displayHeight,
 								devicedc, 0, 0, 560, 384, SRCCOPY);
 					while (height--)
 					{
@@ -1131,13 +1166,14 @@ void VideoRefreshScreen ()
 				}
 				if ((start >= 0) && !celldirty[x][y])
 				{
-					// AJS -- how do we scale these, or not do it this way?
-					// 
-					//StretchBlt(framedc, 0, 0, clientRect.right, clientRect.bottom - STATUSHEIGHT,
-					//	devicedc, 0, 0, 560, 384, SRCCOPY);
-
-					//BitBlt(framedc, xpixel, start, 14, ypixel - start,
-					//	devicedc, xpixel, start, SRCCOPY);
+					// Scale the vertical rectangle for 4:3 aspect ratio display using consistent scaling
+					int scaledX = displayX + (int)(xpixel * scaleX + 0.5);
+					int scaledY = displayY + (int)(start * scaleY + 0.5);
+					int scaledWidth = (int)(14 * scaleX + 0.5);
+					int scaledHeight = (int)((ypixel - start) * scaleY + 0.5);
+					
+					StretchBlt(framedc, scaledX, scaledY, scaledWidth, scaledHeight,
+						devicedc, xpixel, start, 14, ypixel - start, SRCCOPY);
 
 					start = -1;
 				}
