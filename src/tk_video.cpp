@@ -890,8 +890,8 @@ void VideoDisplayLogo ()
 	SetTextAlign(framedc,TA_RIGHT | TA_TOP);
 	SetBkMode(framedc,TRANSPARENT);
 
-#define  DRAWVERSION(x,y,c)		SetTextColor(framedc,c);                \
-								TextOut(framedc,                        \
+#define  DRAWVERSION(x,y,c)		SetTextColor(framedc,c);                
+								//TextOut(framedc,                        \
 										540+x,358+y,                    \
 										"Versão " VERSIONSTRING,		\
 										strlen("Versão " VERSIONSTRING));
